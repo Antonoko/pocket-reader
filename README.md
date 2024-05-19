@@ -21,12 +21,12 @@ A ebook reader supports Chinese on Playdate console.
 - 在线版：即将推出？
 
 2. 打开转换器，根据操作指引，将 txt 文件转换为 PRT 文件；
-3. 将 PRT 文件拷贝至 Playdate 中的`Data\com.haru.pocketreader`下即可阅读；
+3. 将 PRT 文件拷贝至 Playdate 中的`Data\com.haru.pocket_reader`下即可阅读；
 
 ## 其他
 Q： 如何关闭翻页音效？
 
-A：将 playdate 中 com.haru.pocketreader/data.json 的`"trun_on_paper_sfx":true`更改为`"trun_on_paper_sfx":false`，保存即可。
+A：将 playdate 中 `com.haru.pocketreader/data.json` 的 `"trun_on_paper_sfx":true` 更改为`"trun_on_paper_sfx":false`，保存即可。
 
 ## 致谢
 - Playdate 中文支持项目：https://github.com/Antonoko/Chinese-font-for-playdate
