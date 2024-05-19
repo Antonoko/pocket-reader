@@ -16,8 +16,8 @@ A ebook reader supports Chinese on Playdate console.
 ## 如何导入文本
 1. 下载格式转换器：
 - Windows：从 Release 下载 [pocket_reader_convertor.exe](https://github.com/Antonoko/pocket-reader/releases)
-- macOS：从 Release 下载 [pocket_reader_convertor_v1.0.app](https://github.com/Antonoko/pocket-reader/releases)
-- 如果不想执行可执行文件，可安装 python 后，下载代码仓库中的 convertor/convertor.py，通过 `python convertor.py` 执行转换器；
+- macOS：（即将就绪，现在可能不可用）从 Release 下载 [pocket_reader_convertor_v1.0.app](https://github.com/Antonoko/pocket-reader/releases)
+- 手动挡：如果不想执行可执行文件，可安装 python 后，下载代码仓库中的 convertor/convertor.py，通过 `python convertor.py` 执行转换器；
 - 在线版：即将推出？
 
 2. 打开转换器，根据操作指引，将 txt 文件转换为 PRT 文件；
