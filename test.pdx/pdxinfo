@@ -1,8 +1,0 @@
-name=test
-author=Haru
-description=Chinese notes app for Playdate
-bundleID=com.haru.test
-version=2.6
-buildNumber=11
-pdxversion=20400
-buildtime=769333946
