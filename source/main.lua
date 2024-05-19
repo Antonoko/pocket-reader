@@ -437,10 +437,11 @@ function draw_page_indicator(screen_width, width, y)
     gfx.setImageDrawMode(gfx.kDrawModeCopy)
     gfx.setFont(FONT["font_full_circle_halved"].font)
     local index_x = (screen_width-width)/2 + (reader_page_index/#reader_page_index_tbl)*width
-    gfx.drawTextAligned(reader_page_index, index_x, y, kTextAlignment.left)
     if index_x > (screen_width/2) then
+        gfx.drawTextAligned(reader_page_index, index_x, y, kTextAlignment.right)
         gfx.drawTextAligned(get_time_now_as_string(), (screen_width-width)/2, y, kTextAlignment.left)
     else
+        gfx.drawTextAligned(reader_page_index, index_x, y, kTextAlignment.left)
         gfx.drawTextAligned(get_time_now_as_string(), width+(screen_width-width)/2, y, kTextAlignment.right)
     end
 end
