@@ -1,3 +1,4 @@
+![screenshot](https://github.com/Antonoko/pocket-reader/blob/main/__asset__/header.jpg)
 # 📖 pocket reader | 口袋阅读器
 
 专为 Playdate 掌上设备设计，支持中文的电子书阅读器。

@@ -1,7 +1,7 @@
 name=PocketReader
 author=Haru
 description=Chinese Pocket Reader
-bundleID=com.haru.pocketreader
+bundleID=com.haru.pocket_reader
 version=1.0
 buildNumber=1
 imagePath=img/launcher

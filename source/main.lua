@@ -110,10 +110,31 @@ local indicator_img = {
 local main_screen_header = {
     gfx.image.new("img/bg1"),
     gfx.image.new("img/bg2"),
-    gfx.image.new("img/bg1"),
-    gfx.image.new("img/bg1"),
-    gfx.image.new("img/bg1"),
+    gfx.image.new("img/bg3"),
+    gfx.image.new("img/bg4"),
+    gfx.image.new("img/bg5"),
+    gfx.image.new("img/bg6"),
+    gfx.image.new("img/bg7"),
+    gfx.image.new("img/bg8"),
+    gfx.image.new("img/bg9"),
+    gfx.image.new("img/bg10"),
+    gfx.image.new("img/bg11"),
+    gfx.image.new("img/bg12"),
+    gfx.image.new("img/bg13"),
+    gfx.image.new("img/bg14"),
+    gfx.image.new("img/bg15"),
+    gfx.image.new("img/bg16"),
+    gfx.image.new("img/bg17"),
+    gfx.image.new("img/bg18"),
+    gfx.image.new("img/bg19"),
+    gfx.image.new("img/bg20"),
+    gfx.image.new("img/bg21"),
+    gfx.image.new("img/bg22"),
+    gfx.image.new("img/bg23"),
+    gfx.image.new("img/bg24"),
+    gfx.image.new("img/bg25"),
 }
+local main_screen_header_index = math.random(#main_screen_header)
 local STAGE = {}
 local stage_manager = "file_list"
 local is_first_install = true
@@ -137,7 +158,7 @@ local reader_padding = {
     height = 8
 }
 local page_index_cache = {}
-local reader_font_selection = "SHS_20"
+local reader_font_selection = "Sans_20"
 local draw_reader_init = false
 
 local reader_sprite = gfx.sprite.new()
@@ -211,7 +232,7 @@ function load_state()
 	end
 
     page_index_cache = get_or_default(state, "page_index_cache", "table", {})
-    reader_font_selection = get_or_default(state, "reader_font_selection", "string", "SHS_20")
+    reader_font_selection = get_or_default(state, "reader_font_selection", "string", "Sans_20")
     reader_side_mode = get_or_default(state, "reader_side_mode", "boolean", false)
     dark_mode = get_or_default(state, "dark_mode", "boolean", false)
     is_first_install = get_or_default(state, "is_first_install", "boolean", true)
@@ -458,7 +479,7 @@ function draw_file_list()
             getPRTfiletable()
         end
 
-        gfx.setFont(FONT_READER["SHS_20"].font)
+        gfx.setFont(FONT_READER["Sans_20"].font)
         draw_file_list_size = gfx.getTextSize("我")
         draw_file_list_gridview = pd.ui.gridview.new(0, draw_file_list_size*1.5+2)
         draw_file_list_gridview:setNumberOfRows((#prt_tbl))
@@ -475,11 +496,11 @@ function draw_file_list()
     end
 
     function draw_file_list_gridview:drawSectionHeader(section, x, y, width, height)
-        main_screen_header[math.random(#main_screen_header)]:draw(0, y)
+        main_screen_header[main_screen_header_index]:draw(0, y)
     end
 
     function draw_file_list_gridview:drawCell(section, row, column, selected, x, y, width, height)
-        gfx.setFont(FONT_READER["SHS_20"].font)
+        gfx.setFont(FONT_READER["Sans_20"].font)
         if selected then
             gfx.fillRect(x, y, width, height)
             gfx.setImageDrawMode(gfx.kDrawModeFillWhite)
@@ -718,6 +739,7 @@ STAGE["reader"] = function()
         draw_file_list_animation_init = false
         draw_reader_animation_init = false
         draw_reader_init = false
+        main_screen_header_index = math.random(#main_screen_header)
         stage_manager = "file_list"
         save_state()
     end
