@@ -4,3 +4,4 @@ description=Chinese Pocket Reader
 bundleID=com.haru.pocketreader
 version=1.0
 buildNumber=1
+imagePath=img/launcher

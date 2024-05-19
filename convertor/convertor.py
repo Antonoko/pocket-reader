@@ -1,12 +1,5 @@
 import os
-import subprocess
 import json
-import datetime
-import shutil
-from typing import Literal
-import pandas as pd
-from openpyxl import Workbook
-from openpyxl.utils.dataframe import dataframe_to_rows
 
 MAX_CHAR_PER_TXT = 30000
 
@@ -34,7 +27,7 @@ def clear_screen():
     os.system('cls' if os.name == 'nt' else 'clear')
 
 def press_any_key_to_continue():
-    input("\n按任意键继续...")
+    input("\n按回车键继续...")
 
 
 def save_dict_as_json_to_path(data: dict, filepath):
@@ -98,7 +91,7 @@ def json_to_xls():
             text = file.read()
         if len(text) == 0:
             print("""
-            似乎文本为空。
+            似乎文本文件为空。
 """)
             raise FileNotFoundError
         

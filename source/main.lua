@@ -9,11 +9,11 @@ import "CoreLibs/easing"
 
 local pd <const> = playdate
 local gfx <const> = playdate.graphics
-local screenWidth <const> = playdate.display.getWidth()
-local screenHeight <const> = playdate.display.getHeight()
+local screenWidth <const> = playdate.display.getWidth() + 1
+local screenHeight <const> = playdate.display.getHeight() + 1
 
--- local IMG_ABOUT <const> = gfx.image.new("img/about")
--- playdate.setMenuImage(IMG_ABOUT)
+local IMG_ABOUT <const> = gfx.image.new("img/about")
+playdate.setMenuImage(IMG_ABOUT)
 
 local FONT_READER = {
     SHS_20 = {
@@ -48,6 +48,14 @@ local FONT = {
     font_full_circle_halved = {
         name = "font-full-circle-halved",
         font = gfx.font.new('font/font-full-circle-halved')
+    },
+    font_full_circle = {
+        name = "font-full-circle",
+        font = gfx.font.new('font/font-full-circle')
+    },
+    Asheville_Rounded_24_px = {
+        name = "Asheville-Rounded-24-px",
+        font = gfx.font.new('font/Asheville-Rounded-24-px')
     }
 }
 local SFX = {
@@ -73,12 +81,25 @@ local SFX = {
         sound = pd.sound.fileplayer.new("sound/click")
     }
 }
+local default_books = {
+    "快速上手指南.PRT",
+    "围城 第一章 - 钱钟书.PRT",
+    "一只特立独行的猪 - 王小波.PRT",
+}
 local indicator_img = {
-    list_A = gfx.image.new("img/indicator_A.png"),
-    main_screen_bg = gfx.image.new("img/main_screen_background.png"),
+    list_A = gfx.image.new("img/indicator_A"),
+    glance_mask = gfx.image.new("img/glance-mask"),
+    glance_mask_side = gfx.image.new("img/glance-mask-side"),
+    glance_hint_A = gfx.image.new("img/glance_hint_A"),
+    glance_hint_B = gfx.image.new("img/glance_hint_B"),
+}
+local main_screen_header = {
+    gfx.image.new("img/main_screen_background")
 }
 local STAGE = {}
 local stage_manager = "file_list"
+local is_first_install = true
+
 local reader_menu = playdate.getSystemMenu()
 local reader_side_mode = false
 local dark_mode = false
@@ -89,7 +110,9 @@ local current_select_file_index = 1
 
 local reader_page_index_tbl = {}
 local reader_page_index = 1
-local char_offset_cache = 0
+local glance_page_index = 1
+local glance_page_index_lazy = 1
+local force_update_reader_render = false
 local reader_tbl_cache = {}
 local reader_padding = {
     width = 8,
@@ -150,6 +173,7 @@ function save_state()
     state["reader_font_selection"] = reader_font_selection
     state["reader_side_mode"] = reader_side_mode
     state["dark_mode"] = dark_mode
+    state["is_first_install"] = is_first_install
 
 	playdate.datastore.write(state)
 	print("State saved!")
@@ -171,6 +195,7 @@ function load_state()
     reader_font_selection = get_or_default(state, "reader_font_selection", "string", "SHS_20")
     reader_side_mode = get_or_default(state, "reader_side_mode", "boolean", false)
     dark_mode = get_or_default(state, "dark_mode", "boolean", false)
+    is_first_install = get_or_default(state, "is_first_install", "boolean", true)
 
 end
 
@@ -184,12 +209,12 @@ function note_sidebar_option()
         draw_reader_init = false
         save_state()
     end)
-    local modeMenuItem, error = reader_menu:addCheckmarkMenuItem("side mode", function(value)
+    local modeMenuItem, error = reader_menu:addCheckmarkMenuItem("side mode", reader_side_mode, function(value)
         reader_side_mode = value
         draw_reader_init = false
         save_state()
     end)
-    local modeMenuItem, error = reader_menu:addCheckmarkMenuItem("dark", function(value)
+    local modeMenuItem, error = reader_menu:addCheckmarkMenuItem("dark", dark_mode, function(value)
         dark_mode = value
         setInverted(dark_mode)
         save_state()
@@ -214,12 +239,16 @@ function getPRTfiletable()
 end
 
 function add_init_file()
-    local file_content = {
-        text= {
-            "添","加"
-        }
-    }
-    json.encodeToFile("快速上手指南.PRT", file_content)
+    local json_cache = json.decodeFile("default_book/快速上手指南.PRT")
+    json.encodeToFile("快速上手指南.PRT", json_cache)
+end
+
+function add_default_books()
+    local json_cache
+    for k, v in pairs(default_books) do
+        json_cache = json.decodeFile("default_book/"..v)
+        json.encodeToFile(v, json_cache)
+    end
 end
 
 function draw_text_area(text_tbl, lineheight_factor, char_kerning, font, draw_mode, start_x, start_y, width, height)
@@ -367,7 +396,7 @@ function draw_page_indicator(screen_width, width, y)
     gfx.setImageDrawMode(gfx.kDrawModeCopy)
     gfx.setFont(FONT["font_full_circle_halved"].font)
     local index_x = (screen_width-width)/2 + (reader_page_index/#reader_page_index_tbl)*width
-    gfx.drawTextAligned(reader_page_index, index_x, y, kTextAlignment.center)
+    gfx.drawTextAligned(reader_page_index, index_x, y, kTextAlignment.left)
     if index_x > (screen_width/2) then
         gfx.drawTextAligned(get_time_now_as_string(), (screen_width-width)/2, y, kTextAlignment.left)
     else
@@ -375,6 +404,28 @@ function draw_page_indicator(screen_width, width, y)
     end
 end
 
+function draw_page_indicator_glance(screen_width, width, y)
+    gfx.setImageDrawMode(gfx.kDrawModeFillWhite)
+    gfx.setFont(FONT["font_full_circle"].font)
+    local index_x = (screen_width-width)/2 + (reader_page_index/#reader_page_index_tbl)*width
+    gfx.drawTextAligned(reader_page_index, index_x, y, kTextAlignment.left)
+
+    gfx.setFont(FONT["Asheville_Rounded_24_px"].font)
+    local index_x2 = (screen_width-width)/2 + (glance_page_index/#reader_page_index_tbl)*width
+    local alignment = kTextAlignment.left
+    if index_x2 < (screen_width - width)/2 + width/3 then
+        alignment = kTextAlignment.center
+    elseif index_x2 > (screen_width - width)/2 + width/3 and index_x2 < (screen_width - width)/2 + width/3 *2 then
+        alignment = kTextAlignment.center
+    else
+        alignment = kTextAlignment.right
+    end
+    gfx.drawTextAligned(glance_page_index, index_x2, y-26, alignment)
+
+    gfx.setImageDrawMode(gfx.kDrawModeCopy)
+    indicator_img.glance_hint_B:draw(index_x-14, y+3)
+    indicator_img.glance_hint_A:draw(index_x2-22, y-54)
+end
 
 
 local draw_file_list_init = false
@@ -406,7 +457,7 @@ function draw_file_list()
     function draw_file_list_gridview:drawSectionHeader(section, x, y, width, height)
         gfx.setFont(FONT["Asheville_Sans_14_Light"].font)
         gfx.drawTextAligned("pocket reader", x+14, y+8, kTextAlignment.left)
-        indicator_img.main_screen_bg:draw(0, y)
+        main_screen_header[math.random(#main_screen_header)]:draw(0, y)
     end
 
     function draw_file_list_gridview:drawCell(section, row, column, selected, x, y, width, height)
@@ -512,28 +563,47 @@ function draw_reader_animation(type)
 end
 
 
-function draw_reader(container_width, container_height, rotation)
+function draw_reader(container_width, container_height, rotation, is_glance_mode)
     function _update_reader()
+        local page_index
+        if is_glance_mode then
+            page_index = glance_page_index
+        else
+            page_index = reader_page_index
+        end
+
         local image = gfx.image.new(container_width, container_height)
         local tbl_to_render = {}
-        local start_index = reader_page_index_tbl[reader_page_index]
+        local start_index = reader_page_index_tbl[page_index]
         local end_index
-        if start_index == #reader_page_index_tbl then
+        if page_index == #reader_page_index_tbl then
             end_index = #reader_tbl_cache.text
         else
-            end_index = reader_page_index_tbl[reader_page_index +1]
+            end_index = reader_page_index_tbl[page_index +1]
         end
+        print("start_index", start_index, "end_index", end_index)
         for i=start_index, end_index do
             table.insert(tbl_to_render, reader_tbl_cache.text[i])
-         end
+        end
         gfx.pushContext(image)
-            char_offset_cache = draw_text_area(tbl_to_render, FONT_READER[reader_font_selection].lineheight, 0, FONT_READER[reader_font_selection].font, playdate.graphics.kDrawModeCopy, reader_padding.width, reader_padding.height, container_width-reader_padding.width, container_height-reader_padding.height)
-            draw_page_indicator(container_width, container_width-reader_padding.width*4, container_height-14)
+            draw_text_area(tbl_to_render, FONT_READER[reader_font_selection].lineheight, 0, FONT_READER[reader_font_selection].font, playdate.graphics.kDrawModeCopy, reader_padding.width, reader_padding.height, container_width-reader_padding.width, container_height-reader_padding.height)
+            
+            if is_glance_mode then
+                if rotation == 90 then
+                    indicator_img.glance_mask_side:draw(0, 1)
+                elseif rotation == 0 then
+                    indicator_img.glance_mask:draw(0, 0)
+                end
+                draw_page_indicator_glance(container_width, container_width-reader_padding.width*4, container_height-14)
+            else
+                draw_page_indicator(container_width, container_width-reader_padding.width*4, container_height-14)
+            end
         gfx.popContext()
         reader_sprite:setImage(image:rotatedImage(rotation))
 
-        page_index_cache[prt_tbl[current_select_file_index]] = reader_page_index
-        print("page", reader_page_index, "/", #reader_page_index_tbl)
+        page_index_cache[prt_tbl[current_select_file_index]] = page_index
+        force_update_reader_render = false
+        print("page", page_index, "/", #reader_page_index_tbl)
     end
 
     if not draw_reader_init then
@@ -541,6 +611,7 @@ function draw_reader(container_width, container_height, rotation)
         reader_page_index_tbl = calc_text_tbl(reader_tbl_cache.text, FONT_READER[reader_font_selection].lineheight, 0, FONT_READER[reader_font_selection].font, container_width-reader_padding.width*2, container_height-reader_padding.height*2)
         print("load:", prt_tbl[current_select_file_index])
 
+        --load last time page
         if tableContainsKey(page_index_cache, prt_tbl[current_select_file_index]) then
             reader_page_index = page_index_cache[prt_tbl[current_select_file_index]]
         else
@@ -552,29 +623,42 @@ function draw_reader(container_width, container_height, rotation)
     end
 
     ---control
-    if pd.buttonIsPressed(pd.kButtonDown) or pd.buttonIsPressed(pd.kButtonRight) then
-        arrow_btn_skip_cnt_sensitivity += 1
-        if arrow_btn_skip_cnt_sensitivity > 10 then
-            arrow_btn_skip_cnt_sensitivity = 0
-            if reader_page_index < #reader_page_index_tbl then
-                reader_page_index += 1
-                _update_reader()
+    if is_glance_mode then
+        --glance
+        if glance_page_index_lazy ~= glance_page_index then
+            SFX.key.sound:play()
+            _update_reader()
+            glance_page_index_lazy = glance_page_index
+        end
+    else
+        --reader
+        if pd.buttonIsPressed(pd.kButtonDown) or pd.buttonIsPressed(pd.kButtonRight) then
+            arrow_btn_skip_cnt_sensitivity += 1
+            if arrow_btn_skip_cnt_sensitivity > 10 then
+                arrow_btn_skip_cnt_sensitivity = 0
+                if reader_page_index < #reader_page_index_tbl then
+                    reader_page_index += 1
+                    _update_reader()
+                end
+            end
+        elseif pd.buttonIsPressed(pd.kButtonUp) or pd.buttonIsPressed(pd.kButtonLeft) then
+            arrow_btn_skip_cnt_sensitivity += 1
+            if arrow_btn_skip_cnt_sensitivity > 10 then
+                arrow_btn_skip_cnt_sensitivity = 0
+                if reader_page_index > 1 then
+                    reader_page_index -= 1
+                    _update_reader()
+                end
             end
         end
-    elseif pd.buttonIsPressed(pd.kButtonUp) or pd.buttonIsPressed(pd.kButtonLeft) then
-        arrow_btn_skip_cnt_sensitivity += 1
-        if arrow_btn_skip_cnt_sensitivity > 10 then
-            arrow_btn_skip_cnt_sensitivity = 0
-            if reader_page_index > 1 then
-                reader_page_index -= 1
-                _update_reader()
-            end
+        if pd.buttonJustReleased(pd.kButtonDown) or pd.buttonJustReleased(pd.kButtonUp) or pd.buttonJustReleased(pd.kButtonLeft) or pd.buttonJustReleased(pd.kButtonRight) then
+            arrow_btn_skip_cnt_sensitivity = 100
         end
-    end
-    if pd.buttonJustReleased(pd.kButtonDown) or pd.buttonJustReleased(pd.kButtonUp) or pd.buttonJustReleased(pd.kButtonLeft) or pd.buttonJustReleased(pd.kButtonRight) then
-        arrow_btn_skip_cnt_sensitivity = 100
     end
 
+    if force_update_reader_render then
+        _update_reader()
+    end
 
 end
 
@@ -597,9 +681,9 @@ end
 
 STAGE["reader"] = function()
     if reader_side_mode then
-        draw_reader(screenHeight, screenWidth, 90)
+        draw_reader(screenHeight, screenWidth, 90, false)
     else
-        draw_reader(screenWidth, screenHeight, 0)
+        draw_reader(screenWidth, screenHeight, 0, false)
     end
     draw_file_list_animation("out")
     draw_reader_animation("in")
@@ -612,10 +696,73 @@ STAGE["reader"] = function()
         stage_manager = "file_list"
         save_state()
     end
+
+    local crankTicks = pd.getCrankTicks(10)
+    if crankTicks ~= 0 then
+        glance_page_index = reader_page_index
+        stage_manager = "reader_glance"
+    end
 end
 
-STAGE["reader_quick_preview"] = function()
+STAGE["reader_glance"] = function()
+    if reader_side_mode then
+        draw_reader(screenHeight, screenWidth, 90, true)
+    else
+        draw_reader(screenWidth, screenHeight, 0, true)
+    end
 
+    local crankTicks = pd.getCrankTicks(10)
+    if crankTicks == 1 then
+        if glance_page_index < #reader_page_index_tbl then
+            glance_page_index += 1
+        end
+    elseif crankTicks == -1 then
+        if glance_page_index > 1 then
+            glance_page_index -= 1
+        end
+    end
+
+    if pd.buttonIsPressed(pd.kButtonRight) then
+        arrow_btn_skip_cnt_sensitivity += 1
+        if arrow_btn_skip_cnt_sensitivity > 4 then
+            arrow_btn_skip_cnt_sensitivity = 0
+            if glance_page_index < #reader_page_index_tbl-10 then
+                glance_page_index += 10
+            else
+                glance_page_index = #reader_page_index_tbl
+            end
+        end
+    elseif pd.buttonIsPressed(pd.kButtonLeft) then
+        arrow_btn_skip_cnt_sensitivity += 1
+        if arrow_btn_skip_cnt_sensitivity > 4 then
+            arrow_btn_skip_cnt_sensitivity = 0
+            if glance_page_index > 10 then
+                glance_page_index -= 10
+            else
+                glance_page_index = 1
+            end
+        end
+    elseif pd.buttonJustPressed(pd.kButtonUp) then
+        glance_page_index = 1
+    elseif pd.buttonJustPressed(pd.kButtonDown) then
+        glance_page_index = #reader_page_index_tbl
+    end
+    if pd.buttonJustReleased(pd.kButtonRight) or pd.buttonJustReleased(pd.kButtonLeft) then
+        arrow_btn_skip_cnt_sensitivity = 100
+    end
+
+    if pd.buttonJustPressed(pd.kButtonB) or playdate.isCrankDocked() then
+        SFX.slide_out.sound:play()
+        force_update_reader_render = true
+        stage_manager = "reader"
+        save_state()
+    elseif pd.buttonJustPressed(pd.kButtonA) then
+        reader_page_index = glance_page_index
+        SFX.slide_in.sound:play()
+        force_update_reader_render = true
+        stage_manager = "reader"
+        save_state()
+    end
 end
 
 
@@ -623,7 +770,14 @@ end
 
 function init()
     load_state()
-    save_state()
+    if is_first_install then
+        save_state()
+        add_default_books()
+
+        is_first_install = false
+        save_state()
+    end
+
     note_sidebar_option()
     setInverted(dark_mode)
 end

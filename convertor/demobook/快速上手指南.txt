@@ -1,0 +1,22 @@
+你好！
+
+感谢下载与使用 pocket reader，这是一个为 playdate 设计的中文电子书应用。
+
+通过电脑端的转换工具，你可以将 txt 格式的文件转换为本应用支持的 prt 格式，然后拷贝到 playdate 上进行阅读。
+
+更多信息、提交建议与反馈 请访问：
+https://github.com/Antonoko/pocket-reader
+
+操作方式：
+- A：阅读文件
+- B：返回文件选择菜单
+- 方向键：翻页
+- 转动曲柄：快速预览翻页。
+在快速翻页模式中，可以按 A 跳转页面，按 B 返回原先页面
+- 菜单键：更改字体、显示方向、暗黑模式
+
+---
+
+喜欢本项目？在 GitHub 上点个 star 吧~
+
+made by haru | 2024 copyright
