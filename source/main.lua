@@ -16,31 +16,28 @@ local IMG_ABOUT <const> = gfx.image.new("img/about")
 playdate.setMenuImage(IMG_ABOUT)
 
 local FONT_READER = {
-    SHS_20 = {
+    Sans_20 = {
         name = "SourceHanSansCN-M-20px",
         font = gfx.font.new('font/SourceHanSansCN-M-20px'),
+        lineheight = 1.6,
+    },
+    Serif_24 = {
+        name = "SourceHanSerifCN-SemiBold-24px",
+        font = gfx.font.new('font/SourceHanSerifCN-SemiBold-24px'),
         lineheight = 1.6,
     },
     LXGW_24 = {
         name = "LXGWWenKaiGBScreen-24px",
         font = gfx.font.new('font/LXGWWenKaiGBScreen-24px'),
+        lineheight = 1.3,
+    },
+    pixel_12 = {
+        name = "fusion-pixel-font-12px-proportional-zh_hans",
+        font = gfx.font.new('font/fusion-pixel-font-12px-proportional-zh_hans'),
         lineheight = 1.4,
     }, 
 }
 local FONT = {
-    source_san_20 = {
-        name = "SourceHanSansCN-M-20px",
-        font = gfx.font.new('font/SourceHanSansCN-M-20px'),
-        lineheight = 1.6,
-    },
-    Asheville_Sans_14_Light = {
-        name = "Asheville-Sans-14-Light",
-        font = gfx.font.new('font/Asheville-Sans-14-Light')
-    },
-    Asheville_Sans_14_Bold = {
-        name = "Asheville-Sans-14-Bold",
-        font = gfx.font.new('font/Asheville-Sans-14-Bold')
-    },
     Nontendo_Light = {
         name = "Nontendo-Light",
         font = gfx.font.new('font/Nontendo-Light')
@@ -111,7 +108,11 @@ local indicator_img = {
     glance_hint_B = gfx.image.new("img/glance_hint_B"),
 }
 local main_screen_header = {
-    gfx.image.new("img/main_screen_background")
+    gfx.image.new("img/bg1"),
+    gfx.image.new("img/bg2"),
+    gfx.image.new("img/bg1"),
+    gfx.image.new("img/bg1"),
+    gfx.image.new("img/bg1"),
 }
 local STAGE = {}
 local stage_manager = "file_list"
@@ -457,7 +458,7 @@ function draw_file_list()
             getPRTfiletable()
         end
 
-        gfx.setFont(FONT["source_san_20"].font)
+        gfx.setFont(FONT_READER["SHS_20"].font)
         draw_file_list_size = gfx.getTextSize("我")
         draw_file_list_gridview = pd.ui.gridview.new(0, draw_file_list_size*1.5+2)
         draw_file_list_gridview:setNumberOfRows((#prt_tbl))
@@ -474,13 +475,11 @@ function draw_file_list()
     end
 
     function draw_file_list_gridview:drawSectionHeader(section, x, y, width, height)
-        gfx.setFont(FONT["Asheville_Sans_14_Light"].font)
-        gfx.drawTextAligned("pocket reader", x+14, y+8, kTextAlignment.left)
         main_screen_header[math.random(#main_screen_header)]:draw(0, y)
     end
 
     function draw_file_list_gridview:drawCell(section, row, column, selected, x, y, width, height)
-        gfx.setFont(FONT["source_san_20"].font)
+        gfx.setFont(FONT_READER["SHS_20"].font)
         if selected then
             gfx.fillRect(x, y, width, height)
             gfx.setImageDrawMode(gfx.kDrawModeFillWhite)
@@ -595,6 +594,7 @@ function draw_reader(container_width, container_height, rotation, is_glance_mode
         local tbl_to_render = {}
         if page_index > #reader_page_index_tbl then
             page_index = #reader_page_index_tbl - 1
+            reader_page_index = #reader_page_index_tbl - 1  --not close env
         end
         local start_index = reader_page_index_tbl[page_index]
         local end_index = start_index+1
@@ -608,7 +608,7 @@ function draw_reader(container_width, container_height, rotation, is_glance_mode
             table.insert(tbl_to_render, reader_tbl_cache.text[i])
         end
         gfx.pushContext(image)
-            draw_text_area(tbl_to_render, FONT_READER[reader_font_selection].lineheight, 0, FONT_READER[reader_font_selection].font, playdate.graphics.kDrawModeCopy, reader_padding.width, reader_padding.height, container_width-reader_padding.width, container_height-reader_padding.height)
+            draw_text_area(tbl_to_render, FONT_READER[reader_font_selection].lineheight, 0, FONT_READER[reader_font_selection].font, playdate.graphics.kDrawModeCopy, reader_padding.width, reader_padding.height, container_width-reader_padding.width, container_height)
             
             if is_glance_mode then
                 if rotation == 90 then
@@ -633,7 +633,7 @@ function draw_reader(container_width, container_height, rotation, is_glance_mode
 
     if not draw_reader_init then
         reader_tbl_cache = json.decodeFile(prt_tbl[current_select_file_index])
-        reader_page_index_tbl = calc_text_tbl(reader_tbl_cache.text, FONT_READER[reader_font_selection].lineheight, 0, FONT_READER[reader_font_selection].font, container_width-reader_padding.width*2, container_height-reader_padding.height*2)
+        reader_page_index_tbl = calc_text_tbl(reader_tbl_cache.text, FONT_READER[reader_font_selection].lineheight, 0, FONT_READER[reader_font_selection].font, container_width-reader_padding.width*2, container_height-reader_padding.height*1)
         print("load:", prt_tbl[current_select_file_index])
 
         --load last time page

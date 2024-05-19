@@ -4,6 +4,11 @@
 
 A ebook reader supports Chinese on Playdate console.
 
+## 功能
+- 自带 4 种字体：思源黑体、思源宋体、霞鹜文楷、融合像素。可通过自行生成与编译应用来添加更多字体；
+- 横向与纵向的阅读显示、夜间模式；
+- 通过曲柄快速翻阅与定位文本；
+
 ## 如何安装
 从 Release 下载 [pocket_reader.pdx.zip](https://github.com/Antonoko/pocket-reader/releases)，sideload 侧载安装到 Playdate。
 
@@ -11,7 +16,7 @@ A ebook reader supports Chinese on Playdate console.
 1. 下载格式转换器：
 - Windows 用户：从 Release 下载 [pocket_reader_convertor.exe.zip](https://github.com/Antonoko/pocket-reader/releases)
 - macOS 用户：即将推出，可先使用 python 手动运行转换器👇
-- 如果你不想执行可执行文件，可安装 python，下载代码仓库中的 convertor/convertor.py，通过 `python convertor.py` 执行转换器；
+- 如果你不想执行可执行文件，可安装 python 后，下载代码仓库中的 convertor/convertor.py，通过 `python convertor.py` 执行转换器；
 
 2. 打开转换器，根据操作指引，将 txt 文件转换为 PRT 文件；
 3. 将 PRT 文件拷贝至 Playdate 中的`Data\com.haru.pocketreader`下即可阅读；
