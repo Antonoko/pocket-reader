@@ -1,0 +1,1 @@
+pyinstaller --onefile --icon=convertor_icon.icns convertor.py

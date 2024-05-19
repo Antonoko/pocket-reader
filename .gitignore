@@ -40,4 +40,5 @@ luac.out
 *.hex
 
 test.ipynb
-pocketreader.pdx
+pocket_reader.pdx
+release
