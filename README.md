@@ -18,6 +18,7 @@ A ebook reader supports Chinese on Playdate console.
 - Windows 用户：从 Release 下载 [pocket_reader_convertor.exe.zip](https://github.com/Antonoko/pocket-reader/releases)
 - macOS 用户：即将推出，可先使用 python 手动运行转换器👇
 - 如果你不想执行可执行文件，可安装 python 后，下载代码仓库中的 convertor/convertor.py，通过 `python convertor.py` 执行转换器；
+- 在线版：即将推出？
 
 2. 打开转换器，根据操作指引，将 txt 文件转换为 PRT 文件；
 3. 将 PRT 文件拷贝至 Playdate 中的`Data\com.haru.pocketreader`下即可阅读；
