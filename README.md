@@ -11,7 +11,15 @@ A ebook reader supports Chinese on Playdate console.
 - 通过曲柄快速翻阅与定位文本；
 
 ## 如何安装
-从 Release 下载 [pocket_reader.pdx.zip](https://github.com/Antonoko/pocket-reader/releases)，sideload 侧载安装到 Playdate。
+> [!IMPORTANT]  
+> 该应用不支持通过在线方式 sideload 安装。
+
+1. 将 playdate® 设置为“数据传输模式”：Settings → System → Reboot to Data Disk → 通过数据线连接到电脑上
+2. 从 Release 下载 [pocket_reader.pdx.zip](https://github.com/Antonoko/pocket-reader/releases)，解压成 pocket_reader.pdx 的文件夹。
+    - 需要注意，打开后里边应该有多个文件，而不是又一个 pocket_reader.pdx 的文件夹；
+3. 将 pocket_reader.pdx 文件夹复制到 Games 文件夹中；
+4. 推出你的 playdate 设备，按 A 重启，这时应该可以在 sideload 中看到该应用了；
+
 
 ## 如何导入文本
 1. 下载格式转换器：
@@ -21,7 +29,7 @@ A ebook reader supports Chinese on Playdate console.
 - 在线版：即将推出？
 
 2. 打开转换器，根据操作指引，将 txt 文件转换为 PRT 文件；
-3. 将 PRT 文件拷贝至 Playdate 中的`Data\com.haru.pocket_reader`下即可阅读；
+3. 将 PRT 文件拷贝至 Playdate 中的 `Data\com.haru.pocket_reader` 下即可阅读；
 
 ## 其他
 Q： 如何关闭翻页音效？
