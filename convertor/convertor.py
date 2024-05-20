@@ -16,7 +16,7 @@ def print_title():
     1. 将 playdate® 设置为“数据传输模式”：
         Settings → System → Reboot to Data Disk → 通过数据线连接到电脑上
 
-    2. 将转换完成的 json 文件放于 Data/com.haru.pocketreader 中
+    2. 将转换完成的 .PRT 文件放于 Data/com.haru.pocketreader 中
           
     3. 退出“数据传输模式”，打开 Pocket Reader 即可阅读
 
