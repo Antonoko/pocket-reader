@@ -70,7 +70,9 @@ def json_to_xls():
         （超过 {MAX_CHAR_PER_TXT} 字将会自动拆分为多个文件）
             
         """)
-        input_txt_filepath = input("> ").strip('\"')
+        input_txt_filepath = input("> ")
+        input_txt_filepath = input_txt_filepath.strip()
+        input_txt_filepath = input_txt_filepath.strip('\"').replace('\\ ', ' ')
         if not os.path.exists(input_txt_filepath):
             print("""
             似乎文件不存在……
