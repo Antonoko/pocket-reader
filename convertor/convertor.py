@@ -1,5 +1,14 @@
 import os
 import json
+import sys
+
+def change_to_script_directory():
+    if hasattr(sys, 'frozen'):               #check if the program is running as a PyInstaller bundled executable
+        os.chdir(os.path.dirname(sys.executable))   #change dir to the .exe directory
+    else:
+        os.chdir(os.path.dirname(__file__))  #change dir to .py script directory
+
+change_to_script_directory()
 
 MAX_CHAR_PER_TXT = 30000
 
