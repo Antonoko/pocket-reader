@@ -168,6 +168,11 @@ reader_sprite:add()
 
 ----------------utils
 
+function mapValue(old_value, old_min, old_max, new_min, new_max)
+    return ((old_value - old_min) * (new_max - new_min) / (old_max - old_min) + new_min)
+end
+
+
 function get_time_now_as_string()
     local minute = playdate.getTime().minute
     if minute <10 then
@@ -436,7 +441,8 @@ end
 function draw_page_indicator(screen_width, width, y)
     gfx.setImageDrawMode(gfx.kDrawModeCopy)
     gfx.setFont(FONT["font_full_circle_halved"].font)
-    local index_x = (screen_width-width)/2 + (reader_page_index/#reader_page_index_tbl)*width
+    -- local index_x = (screen_width-width)/2 + (reader_page_index/#reader_page_index_tbl)*width
+    local index_x = mapValue(reader_page_index/#reader_page_index_tbl, 0, 1, (screen_width-width)/2, screen_width-(screen_width-width)/2)
     if index_x > (screen_width/2) then
         gfx.drawTextAligned(reader_page_index, index_x, y, kTextAlignment.right)
         gfx.drawTextAligned(get_time_now_as_string(), (screen_width-width)/2, y, kTextAlignment.left)
@@ -447,26 +453,24 @@ function draw_page_indicator(screen_width, width, y)
 end
 
 function draw_page_indicator_glance(screen_width, width, y)
-    gfx.setImageDrawMode(gfx.kDrawModeFillWhite)
-    gfx.setFont(FONT["font_full_circle"].font)
-    local index_x = (screen_width-width)/2 + (reader_page_index/#reader_page_index_tbl)*width
-    gfx.drawTextAligned(reader_page_index, index_x, y, kTextAlignment.left)
-
-    gfx.setFont(FONT["Asheville_Rounded_24_px"].font)
-    local index_x2 = (screen_width-width)/2 + (glance_page_index/#reader_page_index_tbl)*width
-    local alignment = kTextAlignment.left
-    if index_x2 < (screen_width - width)/2 + width/3 then
-        alignment = kTextAlignment.center
-    elseif index_x2 > (screen_width - width)/2 + width/3 and index_x2 < (screen_width - width)/2 + width/3 *2 then
-        alignment = kTextAlignment.center
-    else
-        alignment = kTextAlignment.right
-    end
-    gfx.drawTextAligned(glance_page_index, index_x2, y-26, alignment)
+    -- local index_x = (screen_width-width)/2 + (reader_page_index/#reader_page_index_tbl)*width
+    local index_x = mapValue(reader_page_index/#reader_page_index_tbl, 0, 1, (screen_width-width)/2, screen_width-(screen_width-width)/2)
 
     gfx.setImageDrawMode(gfx.kDrawModeCopy)
     indicator_img.glance_hint_B:draw(index_x-14, y+3)
-    indicator_img.glance_hint_A:draw(index_x2-22, y-54)
+
+    gfx.setImageDrawMode(gfx.kDrawModeFillWhite)
+    gfx.setFont(FONT["font_full_circle_halved"].font)
+    gfx.drawTextAligned(reader_page_index, index_x, y, kTextAlignment.left)
+
+    local index_x2 = mapValue(glance_page_index/#reader_page_index_tbl, 0, 1, (screen_width-width)/2, screen_width-(screen_width-width)/2-70)
+    print("index_x2", index_x2)
+    gfx.setImageDrawMode(gfx.kDrawModeCopy)
+    indicator_img.glance_hint_A:draw(index_x2-60, y-3)
+
+    gfx.setFont(FONT["font_full_circle"].font)
+    gfx.drawTextAligned(glance_page_index, index_x2+14, y, kTextAlignment.left)
+
 end
 
 
@@ -625,7 +629,7 @@ function draw_reader(container_width, container_height, rotation, is_glance_mode
         else
             end_index = reader_page_index_tbl[page_index +1]
         end
-        print("start_index", start_index, "end_index", end_index)
+        -- print("start_index", start_index, "end_index", end_index)
         for i=start_index, end_index do
             table.insert(tbl_to_render, reader_tbl_cache.text[i])
         end
@@ -650,7 +654,7 @@ function draw_reader(container_width, container_height, rotation, is_glance_mode
 
         page_index_cache[prt_tbl[current_select_file_index]] = page_index
         force_update_reader_render = false
-        print("page", page_index, "/", #reader_page_index_tbl)
+        -- print("page", page_index, "/", #reader_page_index_tbl)
     end
 
     if not draw_reader_init then
