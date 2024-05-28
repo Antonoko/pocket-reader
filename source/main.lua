@@ -15,7 +15,11 @@ local screenHeight <const> = playdate.display.getHeight() + 1
 local IMG_ABOUT <const> = gfx.image.new("img/about")
 playdate.setMenuImage(IMG_ABOUT)
 
-local FONT_READER = {
+local FRAMERATE_CONFIG <const> = {
+    normal = 30,
+    low = 10,
+}
+local FONT_READER <const> = {
     Sans_20 = {
         name = "SourceHanSansCN-M-20px",
         font = gfx.font.new('font/SourceHanSansCN-M-20px'),
@@ -37,7 +41,7 @@ local FONT_READER = {
         lineheight = 1.4,
     }, 
 }
-local FONT = {
+local FONT <const> = {
     Nontendo_Light = {
         name = "Nontendo-Light",
         font = gfx.font.new('font/Nontendo-Light')
@@ -55,7 +59,7 @@ local FONT = {
         font = gfx.font.new('font/Asheville-Rounded-24-px')
     }
 }
-local SFX = {
+local SFX <const> = {
     selection = {
         sound = pd.sound.fileplayer.new("sound/selection")
     },
@@ -78,7 +82,7 @@ local SFX = {
         sound = pd.sound.fileplayer.new("sound/click")
     }
 }
-local SFX_paper = {
+local SFX_paper <const> = {
     pd.sound.fileplayer.new("sound/paper1"),
     pd.sound.fileplayer.new("sound/paper2"),
     pd.sound.fileplayer.new("sound/paper3"),
@@ -100,14 +104,14 @@ local default_books = {
     "围城 第一章 - 钱钟书.PRT",
     "一只特立独行的猪 - 王小波.PRT",
 }
-local indicator_img = {
+local indicator_img <const> = {
     list_A = gfx.image.new("img/indicator_A"),
     glance_mask = gfx.image.new("img/glance-mask"),
     glance_mask_side = gfx.image.new("img/glance-mask-side"),
     glance_hint_A = gfx.image.new("img/glance_hint_A"),
     glance_hint_B = gfx.image.new("img/glance_hint_B"),
 }
-local main_screen_header = {
+local main_screen_header <const> = {
     gfx.image.new("img/bg1"),
     gfx.image.new("img/bg2"),
     gfx.image.new("img/bg3"),
@@ -160,11 +164,35 @@ local reader_padding = {
 local page_index_cache = {}
 local reader_font_selection = "Sans_20"
 local draw_reader_init = false
-
 local reader_sprite = gfx.sprite.new()
+
+local is_auto_page_turn_on = false
+local is_start_new_timer_cycle = true
+local auto_page_turn_sec = 10
+local auto_page_turn_sec_lazy = 0
+local page_turn_setting_ui = gfx.sprite.new(gfx.image.new("img/frame_auto_page_turn"))
+local page_turn_setting_ui_num = gfx.sprite.new()
+local page_turn_setting_ui_num_offset_coord = {
+    x = 0,
+    y = 30,
+}
 reader_sprite:setCenter(0,0)
 reader_sprite:moveTo(screenWidth, 0)
 reader_sprite:add()
+page_turn_setting_ui:moveTo(screenWidth/2, screenHeight*1.6)
+page_turn_setting_ui:setZIndex(300)
+page_turn_setting_ui:add()
+page_turn_setting_ui_num:moveTo(screenWidth/2+page_turn_setting_ui_num_offset_coord.x, screenHeight*1.6+page_turn_setting_ui_num_offset_coord.y)
+page_turn_setting_ui_num:setZIndex(310)
+page_turn_setting_ui_num:add()
+local auto_page_turn_indicator = gfx.sprite.new(gfx.image.new(4,screenHeight,playdate.graphics.kColorBlack))
+auto_page_turn_indicator:setCenter(1,1)
+auto_page_turn_indicator:setZIndex(290)
+auto_page_turn_indicator:moveTo(screenWidth, 0)
+local auto_page_turn_indicator_side = gfx.sprite.new(gfx.image.new(screenWidth,4,playdate.graphics.kColorBlack))
+auto_page_turn_indicator_side:setCenter(0,1)
+auto_page_turn_indicator_side:setZIndex(290)
+auto_page_turn_indicator_side:moveTo(screenWidth, screenHeight)
 
 ----------------utils
 
@@ -219,6 +247,7 @@ function save_state()
     state["dark_mode"] = dark_mode
     state["is_first_install"] = is_first_install
     state["trun_on_paper_sfx"] = trun_on_paper_sfx
+    state["auto_page_turn_sec"] = auto_page_turn_sec
 
 	playdate.datastore.write(state)
 	print("State saved!")
@@ -242,6 +271,7 @@ function load_state()
     dark_mode = get_or_default(state, "dark_mode", "boolean", false)
     is_first_install = get_or_default(state, "is_first_install", "boolean", true)
     trun_on_paper_sfx = get_or_default(state, "trun_on_paper_sfx", "boolean", true)
+    auto_page_turn_sec = get_or_default(state, "auto_page_turn_sec", "number", 10)
 
 end
 
@@ -258,6 +288,7 @@ function note_sidebar_option()
     local modeMenuItem, error = reader_menu:addCheckmarkMenuItem("side mode", reader_side_mode, function(value)
         reader_side_mode = value
         draw_reader_init = false
+        is_start_new_timer_cycle = true
         save_state()
     end)
     local modeMenuItem, error = reader_menu:addCheckmarkMenuItem("dark", dark_mode, function(value)
@@ -294,6 +325,23 @@ function add_default_books()
     for k, v in pairs(default_books) do
         json_cache = json.decodeFile("default_book/"..v)
         json.encodeToFile(v, json_cache)
+    end
+end
+
+function is_auto_page_turn_on_switcher()
+    if is_auto_page_turn_on then
+        is_auto_page_turn_on = false
+        auto_page_turn_indicator:remove()
+        auto_page_turn_indicator:moveTo(screenWidth, 0)
+        auto_page_turn_indicator_side:remove()
+        auto_page_turn_indicator_side:moveTo(screenWidth, screenHeight)
+        -- playdate.display.setRefreshRate(FRAMERATE_CONFIG.normal)
+    else
+        auto_page_turn_indicator:add()
+        auto_page_turn_indicator_side:add()
+        is_auto_page_turn_on = true
+        is_start_new_timer_cycle = true
+        -- playdate.display.setRefreshRate(FRAMERATE_CONFIG.low)
     end
 end
 
@@ -441,14 +489,18 @@ end
 function draw_page_indicator(screen_width, width, y)
     gfx.setImageDrawMode(gfx.kDrawModeCopy)
     gfx.setFont(FONT["font_full_circle_halved"].font)
+    local auto_page_indicator_string = ""
+    if is_auto_page_turn_on then
+        auto_page_indicator_string = "AUTO "..auto_page_turn_sec
+    end
     -- local index_x = (screen_width-width)/2 + (reader_page_index/#reader_page_index_tbl)*width
     local index_x = mapValue(reader_page_index/#reader_page_index_tbl, 0, 1, (screen_width-width)/2, screen_width-(screen_width-width)/2)
     if index_x > (screen_width/2) then
         gfx.drawTextAligned(reader_page_index, index_x, y, kTextAlignment.right)
-        gfx.drawTextAligned(get_time_now_as_string(), (screen_width-width)/2, y, kTextAlignment.left)
+        gfx.drawTextAligned(get_time_now_as_string().."  "..auto_page_indicator_string, (screen_width-width)/2, y+1, kTextAlignment.left)
     else
         gfx.drawTextAligned(reader_page_index, index_x, y, kTextAlignment.left)
-        gfx.drawTextAligned(get_time_now_as_string(), width+(screen_width-width)/2, y, kTextAlignment.right)
+        gfx.drawTextAligned(auto_page_indicator_string.."  "..get_time_now_as_string(), width+(screen_width-width)/2, y+1, kTextAlignment.right)
     end
 end
 
@@ -464,7 +516,6 @@ function draw_page_indicator_glance(screen_width, width, y)
     gfx.drawTextAligned(reader_page_index, index_x, y, kTextAlignment.left)
 
     local index_x2 = mapValue(glance_page_index/#reader_page_index_tbl, 0, 1, (screen_width-width)/2, screen_width-(screen_width-width)/2-70)
-    print("index_x2", index_x2)
     gfx.setImageDrawMode(gfx.kDrawModeCopy)
     indicator_img.glance_hint_A:draw(index_x2-60, y-3)
 
@@ -689,6 +740,7 @@ function draw_reader(container_width, container_height, rotation, is_glance_mode
                 arrow_btn_skip_cnt_sensitivity = 0
                 if reader_page_index < #reader_page_index_tbl then
                     reader_page_index += 1
+                    is_start_new_timer_cycle = true
                     _update_reader()
                 end
             end
@@ -698,6 +750,7 @@ function draw_reader(container_width, container_height, rotation, is_glance_mode
                 arrow_btn_skip_cnt_sensitivity = 0
                 if reader_page_index > 1 then
                     reader_page_index -= 1
+                    is_start_new_timer_cycle = true
                     _update_reader()
                 end
             end
@@ -713,6 +766,145 @@ function draw_reader(container_width, container_height, rotation, is_glance_mode
 
 end
 
+
+local draw_auto_page_turn_ui_animation_init = false
+local draw_auto_page_turn_ui_animator = gfx.animator.new(0, screenHeight*1.6, screenHeight*1.6)
+local draw_auto_page_turn_ui_y = screenHeight*1.6
+function draw_auto_page_turn_ui_animation(type)
+    if draw_auto_page_turn_ui_animation_init then
+        if type == "in" then
+            draw_auto_page_turn_ui_animator = gfx.animator.new(200, draw_auto_page_turn_ui_y, screenHeight/2, playdate.easingFunctions.outQuart, 300)
+        elseif type == "out" then
+            draw_auto_page_turn_ui_animator = gfx.animator.new(200, draw_auto_page_turn_ui_y, screenHeight*1.6, playdate.easingFunctions.outQuart, 300)
+        end
+        draw_auto_page_turn_ui_animation_init = false
+    else
+        if not draw_auto_page_turn_ui_animator:ended() then
+            draw_auto_page_turn_ui_y = draw_auto_page_turn_ui_animator:currentValue()
+            page_turn_setting_ui_num:moveTo(screenWidth/2+page_turn_setting_ui_num_offset_coord.x, draw_auto_page_turn_ui_y+page_turn_setting_ui_num_offset_coord.y)
+            page_turn_setting_ui:moveTo(screenWidth/2, draw_auto_page_turn_ui_y)
+        end
+    end
+end
+
+function draw_auto_page_turn_ui()
+    function _update_sec()
+        local image = gfx.image.new(80,30)
+        gfx.pushContext(image)
+            gfx.setImageDrawMode(gfx.kDrawModeCopy)
+            gfx.setFont(FONT_READER["Sans_20"].font)
+            gfx.drawTextAligned(auto_page_turn_sec.." 秒", 40, 10, kTextAlignment.center)
+        gfx.popContext()
+        page_turn_setting_ui_num:setImage(image)
+    end
+
+    local crankTicks = pd.getCrankTicks(10)
+    if crankTicks == 1 then
+        if auto_page_turn_sec < 180 then
+            auto_page_turn_sec += 1
+        end
+    elseif crankTicks == -1 then
+        if auto_page_turn_sec > 1 then
+            auto_page_turn_sec -= 1
+        end
+    end
+    if pd.buttonIsPressed(pd.kButtonLeft) then
+        arrow_btn_skip_cnt_sensitivity += 1
+        if arrow_btn_skip_cnt_sensitivity > 6 then
+            arrow_btn_skip_cnt_sensitivity = 0
+            if auto_page_turn_sec > 1 then
+                auto_page_turn_sec -= 1
+            end
+        end
+    elseif pd.buttonIsPressed(pd.kButtonRight) then
+        arrow_btn_skip_cnt_sensitivity += 1
+        if arrow_btn_skip_cnt_sensitivity > 6 then
+            arrow_btn_skip_cnt_sensitivity = 0
+            if auto_page_turn_sec < 180 then  --playdate autolock timer limitation
+                auto_page_turn_sec += 1
+            end
+        end
+    end
+    if pd.buttonJustReleased(pd.kButtonLeft) or pd.buttonJustReleased(pd.kButtonRight) then
+        arrow_btn_skip_cnt_sensitivity = 100
+    end
+
+    if auto_page_turn_sec_lazy ~= auto_page_turn_sec then
+        _update_sec()
+        auto_page_turn_sec_lazy = auto_page_turn_sec
+    end
+
+    if reader_side_mode then
+        page_turn_setting_ui_num:setRotation(90)
+        page_turn_setting_ui:setImage(gfx.image.new("img/frame_auto_page_turn_side"))
+        page_turn_setting_ui_num_offset_coord = {
+            x = -28,
+            y = 0,
+        }
+    else
+        page_turn_setting_ui_num:setRotation(0)
+        page_turn_setting_ui:setImage(gfx.image.new("img/frame_auto_page_turn"))
+        page_turn_setting_ui_num_offset_coord = {
+            x = 0,
+            y = 30,
+        }
+    end
+
+end
+
+local auto_page_turn_timer, auto_page_turn_animator
+function auto_page_turn_manager(state)
+    -- FIXME add side mode width support
+    if not is_auto_page_turn_on then
+        return
+    end
+
+    function _auto_page_turn_manager_to_next_page()
+        if not is_auto_page_turn_on then
+            return
+        end
+        if reader_page_index < #reader_page_index_tbl then
+            reader_page_index += 1
+            _update_reader()
+        else
+            is_auto_page_turn_on = false
+            auto_page_turn_indicator:remove()
+            auto_page_turn_indicator_side:remove()
+        end
+        auto_page_turn_timer:remove()
+        is_start_new_timer_cycle = true
+    end
+
+    if is_start_new_timer_cycle then
+        for k, v in pairs(playdate.timer.allTimers()) do
+            -- print("removing timer",v)
+            v:remove()
+        end
+
+        auto_page_turn_timer = playdate.timer.new(auto_page_turn_sec*1000, function()
+            _auto_page_turn_manager_to_next_page()
+        end
+        )
+        if reader_side_mode then
+            auto_page_turn_animator = gfx.animator.new(auto_page_turn_sec*1000, screenWidth, 0, playdate.easingFunctions.linear)
+        else
+            auto_page_turn_animator = gfx.animator.new(auto_page_turn_sec*1000, 0, screenHeight, playdate.easingFunctions.linear)
+        end
+        is_start_new_timer_cycle = false
+    end
+
+    if not auto_page_turn_animator:ended() then
+        if reader_side_mode then
+            auto_page_turn_indicator_side:add()
+            auto_page_turn_indicator:remove()
+            auto_page_turn_indicator_side:moveTo(auto_page_turn_animator:currentValue(), screenHeight)
+        else
+            auto_page_turn_indicator_side:remove()
+            auto_page_turn_indicator:add()
+            auto_page_turn_indicator:moveTo(screenWidth, auto_page_turn_animator:currentValue())
+        end
+    end
+end
 
 -----------------
 
@@ -731,6 +923,7 @@ STAGE["file_list"] = function()
 end
 
 STAGE["reader"] = function()
+    auto_page_turn_manager()
     if reader_side_mode then
         draw_reader(screenHeight, screenWidth, 90, false)
     else
@@ -741,9 +934,11 @@ STAGE["reader"] = function()
 
     if pd.buttonJustPressed(pd.kButtonB) then
         SFX.click.sound:play()
+        -- playdate.display.setRefreshRate(FRAMERATE_CONFIG.normal)
         draw_file_list_animation_init = false
         draw_reader_animation_init = false
         draw_reader_init = false
+        is_auto_page_turn_on = false
         main_screen_header_index = math.random(#main_screen_header)
         stage_manager = "file_list"
         save_state()
@@ -753,6 +948,12 @@ STAGE["reader"] = function()
     if crankTicks ~= 0 then
         glance_page_index = reader_page_index
         stage_manager = "reader_glance"
+    end
+
+    if pd.buttonJustPressed(pd.kButtonA) then
+        draw_auto_page_turn_ui_animation_init = true
+        draw_auto_page_turn_ui_animation("in")
+        stage_manager = "set_auto_page_turn"
     end
 end
 
@@ -818,6 +1019,19 @@ STAGE["reader_glance"] = function()
 end
 
 
+STAGE["set_auto_page_turn"] = function()
+    draw_auto_page_turn_ui()
+
+    if pd.buttonJustReleased(pd.kButtonA) then
+        draw_auto_page_turn_ui_animation_init = true
+        draw_auto_page_turn_ui_animation("out")
+        is_auto_page_turn_on_switcher()
+        is_start_new_timer_cycle = true
+        draw_reader_init = false
+        stage_manager = "reader"
+    end
+end
+
 -----------------
 
 function init()
@@ -839,7 +1053,13 @@ function pd.update()
     gfx.sprite.update()
     pd.timer.updateTimers()
 
+    draw_auto_page_turn_ui_animation()
     STAGE[stage_manager]()
+
+end
+
+function pd.gameWillTerminate()
+    save_state()
 end
 
 init()
