@@ -15,11 +15,11 @@ A ebook reader supports Chinese on Playdate console.
 > [!IMPORTANT]  
 > **该应用不支持通过在线方式 sideload 安装，只能通过 USB 传输安装。**
 
-1. 将 playdate® 设置为“数据传输模式”：Settings → System → Reboot to Data Disk → 通过数据线连接到电脑上
+1. 将 Playdate 设置为“数据传输模式”：`Settings → System → Reboot to Data Disk → 通过数据线连接到电脑上`
 2. 从 Release 下载 [pocket_reader.pdx.zip](https://github.com/Antonoko/pocket-reader/releases)，解压成 `pocket_reader.pdx` 的文件夹。
-    - **需要注意，打开 pocket_reader.pdx 文件夹后，里边应该有多个文件，而不是又一个 pocket_reader.pdx 的文件夹；**
+    - **需要注意，打开 pocket_reader.pdx 文件夹后，里边应该有多个文件，而不是又一个 pocket_reader.pdx 的文件夹。也就是说，只需要复制最低一级目录、直接就包含许多文件的 pocket_reader.pdx 文件夹即可。**
 3. 将 `pocket_reader.pdx 文件夹` 复制到 `Games` 文件夹中；
-4. 弹出你的 playdate 设备，按 A 重启，这时应该可以在 sideload 中看到该应用了；
+4. 弹出你的 Playdate 设备，按 A 重启，这时应该可以在 sideload 中看到该应用了；
 
 
 ## 如何导入文本
