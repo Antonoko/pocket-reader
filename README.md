@@ -24,12 +24,13 @@ A ebook reader supports Chinese on Playdate console.
 
 ## 如何导入文本
 1. 下载格式转换器：
-- Windows：从 Release 下载 [pocket_reader_convertor.exe](https://github.com/Antonoko/pocket-reader/releases)
-- macOS：从 Release 下载 [pocket_reader_convertor_v1.0_macos](https://github.com/Antonoko/pocket-reader/releases)
+- Windows：从 Release 下载 [pocket_reader_convertor_windows.exe](https://github.com/Antonoko/pocket-reader/releases)
+- macOS：从 Release 下载 [pocket_reader_convertor_macos.zip](https://github.com/Antonoko/pocket-reader/releases)
 - 手动挡：如果不想执行可执行文件，可安装 python 后，下载代码仓库中的 convertor/convertor.py，通过 `python convertor.py` 执行转换器；
 - 在线版：即将推出？
 
 2. 打开转换器，根据操作指引，将 txt 文件转换为 PRT 文件；
+    - txt 文件内容需要为 utf-8 编码，如果不确定，可以新建一个 txt 后复制原文粘贴保存，默认即为 utf-8 编码了；
 3. 将 PRT 文件拷贝至 Playdate 中的 `Data\com.haru.pocket_reader` 下即可阅读；
 
 ## 其他
@@ -39,10 +40,10 @@ A：将 playdate 中 `com.haru.pocketreader/data.json` 的 `"trun_on_paper_sfx":
 
 Q： 遇到 bug、且导致应用无法正常启动使用？
 
-A：在 Setting → Games 中删除游戏数据（Delete Game Data）即可重置应用。同时欢迎在 issue 提交反馈报告（在应用崩溃后，按 A 可查看出错原因）。
+A：在 Playdate `Setting → Games` 中删除游戏数据（Delete Game Data）即可重置应用。同时欢迎在 issue 提交反馈报告（在应用崩溃后，按 A 可查看出错原因）。
 
 ## 致谢
 - Playdate 中文支持项目：https://github.com/Antonoko/Chinese-font-for-playdate
 - PlayBook：https://github.com/IdreesInc/PlayBook
 
-| 欢迎前往[作者的 GitHub 仓库](https://github.com/Antonoko?tab=repositories) 发现更多 Playdate 相关应用😺
+| 欢迎前往 [作者的 GitHub 仓库](https://github.com/Antonoko?tab=repositories) 发现更多 Playdate 相关应用😺
