@@ -46,4 +46,4 @@ A：在 Playdate `Setting → Games` 中删除游戏数据（Delete Game Data）
 - Playdate 中文支持项目：https://github.com/Antonoko/Chinese-font-for-playdate
 - PlayBook：https://github.com/IdreesInc/PlayBook
 
-| 欢迎前往 [作者的 GitHub 仓库](https://github.com/Antonoko?tab=repositories) 发现更多 Playdate 相关应用😺
+> 欢迎前往 [作者的 GitHub 仓库](https://github.com/Antonoko?tab=repositories) 发现更多 Playdate 相关应用😺
