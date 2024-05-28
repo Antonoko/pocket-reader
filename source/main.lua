@@ -808,7 +808,7 @@ function draw_auto_page_turn_ui()
             auto_page_turn_sec -= 1
         end
     end
-    if pd.buttonIsPressed(pd.kButtonLeft) then
+    if pd.buttonIsPressed(pd.kButtonLeft) or pd.buttonIsPressed(pd.kButtonUp) then
         arrow_btn_skip_cnt_sensitivity += 1
         if arrow_btn_skip_cnt_sensitivity > 6 then
             arrow_btn_skip_cnt_sensitivity = 0
@@ -816,7 +816,7 @@ function draw_auto_page_turn_ui()
                 auto_page_turn_sec -= 1
             end
         end
-    elseif pd.buttonIsPressed(pd.kButtonRight) then
+    elseif pd.buttonIsPressed(pd.kButtonRight) or pd.buttonIsPressed(pd.kButtonDown) then
         arrow_btn_skip_cnt_sensitivity += 1
         if arrow_btn_skip_cnt_sensitivity > 6 then
             arrow_btn_skip_cnt_sensitivity = 0
@@ -825,7 +825,7 @@ function draw_auto_page_turn_ui()
             end
         end
     end
-    if pd.buttonJustReleased(pd.kButtonLeft) or pd.buttonJustReleased(pd.kButtonRight) then
+    if pd.buttonJustReleased(pd.kButtonLeft) or pd.buttonJustReleased(pd.kButtonRight) or pd.buttonJustReleased(pd.kButtonUp) or pd.buttonJustReleased(pd.kButtonDown) then
         arrow_btn_skip_cnt_sensitivity = 100
     end
 
