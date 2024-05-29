@@ -330,6 +330,7 @@ end
 
 function is_auto_page_turn_on_switcher()
     if is_auto_page_turn_on then
+        playdate.setAutoLockDisabled(false)
         is_auto_page_turn_on = false
         auto_page_turn_indicator:remove()
         auto_page_turn_indicator:moveTo(screenWidth, 0)
@@ -337,6 +338,7 @@ function is_auto_page_turn_on_switcher()
         auto_page_turn_indicator_side:moveTo(screenWidth, screenHeight)
         -- playdate.display.setRefreshRate(FRAMERATE_CONFIG.normal)
     else
+        playdate.setAutoLockDisabled(true)
         auto_page_turn_indicator:add()
         auto_page_turn_indicator_side:add()
         is_auto_page_turn_on = true

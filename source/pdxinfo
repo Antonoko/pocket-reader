@@ -3,5 +3,5 @@ author=Haru
 description=Chinese Pocket Reader
 bundleID=com.haru.pocket_reader
 version=1.3
-buildNumber=6
+buildNumber=7
 imagePath=img/launcher
