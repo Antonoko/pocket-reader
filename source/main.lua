@@ -98,7 +98,7 @@ local SFX_paper <const> = {
     pd.sound.fileplayer.new("sound/paper13"),
     pd.sound.fileplayer.new("sound/paper14"),
 }
-local trun_on_paper_sfx = true
+local turn_on_paper_sfx = true
 local default_books = {
     "快速上手指南.PRT",
     "围城 第一章 - 钱钟书.PRT",
@@ -246,7 +246,7 @@ function save_state()
     state["reader_side_mode"] = reader_side_mode
     state["dark_mode"] = dark_mode
     state["is_first_install"] = is_first_install
-    state["trun_on_paper_sfx"] = trun_on_paper_sfx
+    state["turn_on_paper_sfx"] = turn_on_paper_sfx
     state["auto_page_turn_sec"] = auto_page_turn_sec
 
 	playdate.datastore.write(state)
@@ -270,7 +270,7 @@ function load_state()
     reader_side_mode = get_or_default(state, "reader_side_mode", "boolean", false)
     dark_mode = get_or_default(state, "dark_mode", "boolean", false)
     is_first_install = get_or_default(state, "is_first_install", "boolean", true)
-    trun_on_paper_sfx = get_or_default(state, "trun_on_paper_sfx", "boolean", true)
+    turn_on_paper_sfx = get_or_default(state, "turn_on_paper_sfx", "boolean", true)
     auto_page_turn_sec = get_or_default(state, "auto_page_turn_sec", "number", 10)
 
 end
@@ -697,7 +697,7 @@ function draw_reader(container_width, container_height, rotation, is_glance_mode
                 end
                 draw_page_indicator_glance(container_width, container_width-reader_padding.width*4, container_height-14)
             else
-                if trun_on_paper_sfx then
+                if turn_on_paper_sfx then
                     SFX_paper[math.random(#SFX_paper)]:play()
                 end
                 draw_page_indicator(container_width, container_width-reader_padding.width*4, container_height-14)

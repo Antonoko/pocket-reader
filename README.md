@@ -36,7 +36,7 @@ A ebook reader supports Chinese on Playdate console.
 ## 其他
 Q： 如何关闭翻页音效？
 
-A：将 playdate 中 `Data\com.haru.pocketreader\data.json` 的 `"trun_on_paper_sfx":true` 更改为`"trun_on_paper_sfx":false`，保存即可。
+A：将 playdate 中 `Data\com.haru.pocketreader\data.json` 的 `"turn_on_paper_sfx":true` 更改为`"turn_on_paper_sfx":false`，保存即可。
 
 Q： 遇到 bug、且导致应用无法正常启动使用？
 
