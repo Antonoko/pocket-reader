@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pocket Reader 文本转换器</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#3b82f6',
+                        secondary: '#64748b',
+                        accent: '#f97316',
+                        neutral: '#f1f5f9',
+                        dark: '#0f172a',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-gray-50 text-gray-800 min-h-screen flex flex-col">
+    <!-- 导航栏 -->
+    <nav class="bg-white shadow-md fixed w-full z-50 transition-all duration-300" id="navbar">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center space-x-2">
+                <i class="fa fa-book text-primary text-2xl"></i>
+                <h1 class="text-xl font-bold text-primary">Pocket Reader 文本转换器</h1>
+            </div>
+            <button class="md:hidden text-gray-600" id="menu-toggle">
+                <i class="fa fa-bars text-xl"></i>
+            </button>
+        </div>
+    </nav>
+
+    <!-- 主要内容 -->
+    <main class="flex-grow pt-20">
+        <!-- 转换器 -->
+        <section id="converter" class="py-16 bg-gray-100">
+            <div class="container mx-auto px-4">
+                <div class="max-w-3xl mx-auto bg-white rounded-xl shadow-xl overflow-hidden">
+                    <div class="bg-primary text-white p-6">
+                        <h3 class="text-xl font-semibold flex items-center">
+                            <i class="fa fa-exchange mr-2"></i> TXT 转 PRT（Pocket Reader Text）
+                        </h3>
+                    </div>
+                    <div class="p-6">
+                        <div id="drop-area" class="border-2 border-dashed border-gray-300 rounded-lg p-10 text-center mb-6 hover:border-primary transition-colors cursor-pointer">
+                            <i class="fa fa-cloud-upload text-4xl text-gray-400 mb-4"></i>
+                            <p class="text-gray-500 mb-2">拖放您的 TXT 文件到这里，或</p>
+                            <label class="inline-block bg-primary text-white px-6 py-2 rounded-md cursor-pointer hover:bg-primary/90 transition-colors">
+                                <i class="fa fa-file-text-o mr-2"></i>选择文件
+                                <input type="file" id="file-input" accept=".txt" class="hidden">
+                            </label>
+                            <p class="text-gray-400 text-sm mt-4">支持的格式：.txt（最大 10MB）</p>
+                        </div>
+                        
+                        <div id="file-info" class="hidden mb-6">
+                            <div class="flex items-center p-4 bg-gray-50 rounded-lg border border-gray-200">
+                                <i class="fa fa-file-text-o text-primary text-2xl mr-4"></i>
+                                <div class="flex-grow">
+                                    <h4 id="file-name" class="font-medium"></h4>
+                                    <p id="file-size" class="text-sm text-gray-500"></p>
+                                </div>
+                                <button id="remove-file" class="text-gray-400 hover:text-red-500 transition-colors">
+                                    <i class="fa fa-times-circle text-xl"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div id="conversion-processing" class="hidden mb-6 text-center">
+                            <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-primary mb-2"></div>
+                            <p class="font-medium">正在处理...</p>
+                        </div>
+                        
+                        <div id="conversion-result" class="hidden mb-6">
+                            <div class="p-4 bg-green-50 rounded-lg border border-green-200">
+                                <div class="flex items-center mb-4">
+                                    <i class="fa fa-check-circle text-green-500 text-2xl mr-3"></i>
+                                    <h4 class="font-medium text-green-800">转换成功！</h4>
+                                </div>
+                                <div id="output-files" class="space-y-2 mb-4"></div>
+                                <button id="download-all" class="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition-colors">
+                                    <i class="fa fa-download mr-2"></i>下载所有文件
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div id="conversion-error" class="hidden mb-6">
+                            <div class="p-4 bg-red-50 rounded-lg border border-red-200">
+                                <div class="flex items-center mb-4">
+                                    <i class="fa fa-exclamation-circle text-red-500 text-2xl mr-3"></i>
+                                    <h4 class="font-medium text-red-800">转换失败</h4>
+                                </div>
+                                <p id="error-message" class="text-red-700 mb-4"></p>
+                                <button id="try-again" class="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700 transition-colors">
+                                    <i class="fa fa-refresh mr-2"></i>重试
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <button id="convert-btn" class="w-full bg-primary text-white py-3 rounded-lg font-medium hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+                            <i class="fa fa-cog mr-2"></i>开始转换
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- 页脚 -->
+    <footer class="bg-dark text-white py-6">
+        <div class="container mx-auto px-4 text-center">
+            <p class="text-gray-400">
+                &copy; 2025 Pocket Reader 转换器 | https://github.com/Antonoko/pocket-reader
+            </p>
+        </div>
+    </footer>
+
+    <!-- 脚本 -->
+    <script>
+        // 导航栏滚动效果
+        const navbar = document.getElementById('navbar');
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 10) {
+                navbar.classList.add('py-2', 'shadow-lg');
+                navbar.classList.remove('py-3', 'shadow-md');
+            } else {
+                navbar.classList.add('py-3', 'shadow-md');
+                navbar.classList.remove('py-2', 'shadow-lg');
+            }
+        });
+
+        // 移动端菜单
+        const menuToggle = document.getElementById('menu-toggle');
+        const mobileMenu = document.getElementById('mobile-menu');
+        menuToggle.addEventListener('click', () => {
+            mobileMenu.classList.toggle('hidden');
+        });
+
+        // 文件上传和转换功能
+        const dropArea = document.getElementById('drop-area');
+        const fileInput = document.getElementById('file-input');
+        const fileInfo = document.getElementById('file-info');
+        const fileName = document.getElementById('file-name');
+        const fileSize = document.getElementById('file-size');
+        const removeFile = document.getElementById('remove-file');
+        const convertBtn = document.getElementById('convert-btn');
+        const conversionProcessing = document.getElementById('conversion-processing');
+        const conversionResult = document.getElementById('conversion-result');
+        const outputFiles = document.getElementById('output-files');
+        const downloadAll = document.getElementById('download-all');
+        const conversionError = document.getElementById('conversion-error');
+        const errorMessage = document.getElementById('error-message');
+        const tryAgain = document.getElementById('try-again');
+
+        let selectedFile = null;
+        let convertedFiles = [];
+
+        // 拖放事件
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            dropArea.addEventListener(eventName, preventDefaults, false);
+        });
+
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dropArea.addEventListener(eventName, highlight, false);
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            dropArea.addEventListener(eventName, unhighlight, false);
+        });
+
+        function highlight() {
+            dropArea.classList.add('border-primary');
+            dropArea.classList.add('bg-primary/5');
+        }
+
+        function unhighlight() {
+            dropArea.classList.remove('border-primary');
+            dropArea.classList.remove('bg-primary/5');
+        }
+
+        dropArea.addEventListener('drop', handleDrop, false);
+
+        function handleDrop(e) {
+            const dt = e.dataTransfer;
+            const file = dt.files[0];
+            handleFile(file);
+        }
+
+        fileInput.addEventListener('change', function() {
+            const file = this.files[0];
+            handleFile(file);
+        });
+
+        function handleFile(file) {
+            if (!file) return;
+            if (!file.name.endsWith('.txt')) {
+                showError('请上传 TXT 格式的文件');
+                return;
+            }
+            if (file.size > 10 * 1024 * 1024) { // 10MB
+                showError('文件大小不能超过 10MB');
+                return;
+            }
+            
+            selectedFile = file;
+            showFileInfo();
+            convertBtn.disabled = false;
+        }
+
+        function showFileInfo() {
+            fileName.textContent = selectedFile.name;
+            fileSize.textContent = formatFileSize(selectedFile.size);
+            fileInfo.classList.remove('hidden');
+        }
+
+        removeFile.addEventListener('click', function() {
+            selectedFile = null;
+            fileInfo.classList.add('hidden');
+            convertBtn.disabled = true;
+        });
+
+        convertBtn.addEventListener('click', convertFile);
+        tryAgain.addEventListener('click', function() {
+            conversionError.classList.add('hidden');
+            fileInfo.classList.remove('hidden');
+            convertBtn.disabled = false;
+        });
+
+        function convertFile() {
+            if (!selectedFile) return;
+            
+            // 显示处理中状态
+            conversionProcessing.classList.remove('hidden');
+            fileInfo.classList.add('hidden');
+            convertBtn.disabled = true;
+            
+            // 读取文件内容
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const text = e.target.result;
+                    if (!text || text.length === 0) {
+                        throw new Error('文件内容为空');
+                    }
+                    
+                    // 转换文件
+                    const convertedFiles = convertTextToPRT(text, selectedFile.name);
+                    
+                    // 显示结果
+                    showConversionResult(convertedFiles);
+                } catch (error) {
+                    showError(error.message);
+                }
+            };
+            reader.onerror = function() {
+                showError('读取文件时发生错误');
+            };
+            reader.readAsText(selectedFile);
+        }
+
+        function convertTextToPRT(text, originalFileName) {
+            const MAX_CHAR_PER_TXT = 30000;
+            const baseName = originalFileName.replace(/\.txt$/i, '');
+            const files = [];
+            let counter = 0;
+            let counterFile = 1;
+            let currentText = [];
+            
+            for (let i = 0; i < text.length; i++) {
+                currentText.push(text[i]);
+                counter += 1;
+                
+                if (counter > MAX_CHAR_PER_TXT) {
+                    const fileName = counterFile > 1 ? `${baseName}_${counterFile}.PRT` : `${baseName}.PRT`;
+                    const fileContent = createPRTFile(currentText);
+                    files.push({ name: fileName, content: fileContent });
+                    
+                    counterFile += 1;
+                    counter = 0;
+                    currentText = [];
+                }
+            }
+            
+            // 处理剩余文本
+            if (currentText.length > 0) {
+                const fileName = counterFile > 1 ? `${baseName}_${counterFile}.PRT` : `${baseName}.PRT`;
+                const fileContent = createPRTFile(currentText);
+                files.push({ name: fileName, content: fileContent });
+            }
+            
+            return files;
+        }
+
+        function createPRTFile(textArray) {
+            // 模拟原代码中的 turn_str_lst 功能
+            const processedText = textArray.map(char => {
+                if (char === '\n') {
+                    return '\\n';
+                }
+                return char;
+            });
+            
+            // 创建 PRT 文件内容（JSON 格式）
+            return JSON.stringify({ text: processedText }, null, 2);
+        }
+
+        function showConversionResult(files) {
+            convertedFiles = files;
+            outputFiles.innerHTML = '';
+            
+            files.forEach(file => {
+                const fileElement = document.createElement('div');
+                fileElement.className = 'flex justify-between items-center p-2 bg-white rounded border border-gray-200';
+                
+                const nameElement = document.createElement('span');
+                nameElement.className = 'font-medium';
+                nameElement.textContent = file.name;
+                
+                const downloadBtn = document.createElement('button');
+                downloadBtn.className = 'text-primary hover:text-primary/80 transition-colors';
+                downloadBtn.innerHTML = '<i class="fa fa-download mr-1"></i> 下载';
+                downloadBtn.addEventListener('click', () => downloadFile(file.name, file.content));
+                
+                fileElement.appendChild(nameElement);
+                fileElement.appendChild(downloadBtn);
+                outputFiles.appendChild(fileElement);
+            });
+            
+            conversionProcessing.classList.add('hidden');
+            conversionResult.classList.remove('hidden');
+        }
+
+        function downloadFile(fileName, content) {
+            const blob = new Blob([content], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = fileName;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        downloadAll.addEventListener('click', function() {
+            if (convertedFiles.length === 1) {
+                downloadFile(convertedFiles[0].name, convertedFiles[0].content);
+            } else {
+                // 对于多个文件，逐个下载
+                convertedFiles.forEach(file => {
+                    setTimeout(() => {
+                        downloadFile(file.name, file.content);
+                    }, 100);
+                });
+            }
+        });
+
+        function showError(message) {
+            errorMessage.textContent = message;
+            conversionProcessing.classList.add('hidden');
+            conversionError.classList.remove('hidden');
+        }
+
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+    </script>
+</body>
+</html>
+    
